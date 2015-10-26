@@ -3,7 +3,7 @@ Created on Oct 20, 2015
 
 @author: ahmadjaved.se@gmail.com
 '''
-from setuptools import setup
+from setuptools import setup, find_packages
 
 def readme():
     with open('README.rst') as f:
@@ -15,6 +15,8 @@ setup(name='SQLAlchemy-Paginator',
       long_description=readme(),
       classifiers=[
         'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Build Tools',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='sqlalchemy pagination paginator paginate sqlalchemy-orm paging slicing sqlalchemy-query',
@@ -22,6 +24,6 @@ setup(name='SQLAlchemy-Paginator',
       author='Ahmad Javed',
       author_email='ahmadjaved.se@gmail.com',
       license='',
-      packages=['SQLAlchemy-Paginator'],
+      packages=find_packages(exclude=['tests*']),
       include_package_data=True,
       zip_safe=False)
