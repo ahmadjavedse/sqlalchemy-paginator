@@ -11,7 +11,7 @@ from exceptions import PageNotAnInteger, EmptyPage
 
 class Paginator(object):
     """
-    This class help you to manage data with pagination. This class will fetch
+    This class helps you to manage data with pagination. This class will fetch
     data in pages. That is, instead of fetching all the records from database
     at a time, this class will fetch defined number of records at a time.
     
@@ -19,10 +19,38 @@ class Paginator(object):
     data for next page. In this way we can get ride from the memory overloading
     problem as well.
     
-    This class will optimized the query to fetch total number of records from
-    database against given query_set. Optimization will applied only the query
-    that will used to fetch records. You can also provide the separate query in
-    optional_count_query_set that will used for count total records.
+    This class will also optimized the query for fetching total number of 
+    records from database against given query_set. Optimization will be applied
+    only on the query that will be used for fetching total number of records.
+    You can also provide the separate query in optional_count_query_set argument
+    for fetching total number of records.
+    
+    ..usage::
+        You can use this paginator module in python scripting code and in web 
+        based application code as well.
+        
+        :Example1:
+        >>> from sqlalchemy_paginator import Paginator
+        >>> query = session.query(MyModel)
+        >>> paginator = Paginator(query, 5)
+        >>> for page in paginator:
+        >>>     print page.number  # page number of current page in iterator
+        >>>     print page.object_list  # this is a list that contains the records of current page
+        
+        :Example2:
+        >>> from sqlalchemy_paginator import Paginator
+        >>> query = session.query(MyModel)
+        >>> paginator = Paginator(query, 5)
+        >>> page = paginator.page(page_number)
+        >>> print page.paginator.count  # to get total number of records against given query
+        >>> print page.paginator.total_pages  # to get total number of pages
+        >>> print page.paginator.pages_range  # to get range of pages in list
+        >>> print page.start_index  # to get index of the first object on this page
+        >>> print page.end_index  # to get index of the last object on this page
+        >>> if page.has_previous():
+        >>>     print page.previous_page_number  # to get previous page number
+        >>> if page.has_next():
+        >>>     print page.next_page_number
     """
     def __init__(self, query_set, per_page_limit, optional_count_query_set=None,
                  allow_empty_first_page=True):
@@ -54,7 +82,23 @@ class Paginator(object):
         self.per_page_limit = per_page_limit
         self.optional_count_query_set = optional_count_query_set
         self.allow_empty_first_page = allow_empty_first_page
-        self._total_pages = self._count = None
+        self.__total_pages = self.__count = None
+        self.__iter_page = 1
+        
+    def __iter__(self):
+        """The __iter__ returns the iterator object and is implicitly called at
+        the start of loops"""
+        self.__iter_page = 1
+        return self
+    
+    def next(self):
+        """Returns the next page and is implicitly called at each loop 
+        increment."""
+        if self.__iter_page > self.total_pages:
+            raise StopIteration
+        page = self.page(self.__iter_page)
+        self.__iter_page += 1
+        return page
 
     def validate_page_number(self, page_number):
         """
@@ -109,11 +153,10 @@ class Paginator(object):
         """
         page_number = self.validate_page_number(page_number)
         offset = (page_number - 1) * self.per_page_limit
-        return Page(self.query_set[offset, self.per_page_limit], page_number,
-                    self)
+        return Page(self.query_set.offset(offset).limit(self.per_page_limit).all(),
+                    page_number, self)
 
-    @property
-    def count(self):
+    def __get_count(self):
         """
         Returns the total number of objects, across all pages.
         
@@ -125,14 +168,15 @@ class Paginator(object):
             query for fetching total number records otherwise query_set query
             will be used for fetching total number records.
         """
-        if self._count is None:
+        if self.__count is None:
             if self.optional_count_query_set is None:
-                self.count_query_set_optional = self.query_set.order_by(None)
-            self._count = self.count_query_set_optional.with_entities(func.count('*')).scalar()
-        return self._count
+                self.optional_count_query_set = self.query_set.order_by(None)
+            count_query = self.optional_count_query_set.statement.with_only_columns([func.count()])
+            self.__count = self.optional_count_query_set.session.execute(count_query).scalar()
+        return self.__count
+    count = property(__get_count)
 
-    @property
-    def total_pages(self):
+    def __get_total_pages(self):
         """
         Returns the total number of pages.
         
@@ -144,16 +188,16 @@ class Paginator(object):
             true then returns 1 instead of 0.
         """
         ""
-        if self._total_pages is None:
+        if self.__total_pages is None:
             if self.count == 0 and not self.allow_empty_first_page:
-                self._total_pages = 0
+                self.__total_pages = 0
             else:
                 hits = max(1, self.count)
-                self._total_pages = int(ceil(hits / float(self.per_page_limit)))
-        return self._total_pages
+                self.__total_pages = int(ceil(hits / float(self.per_page_limit)))
+        return self.__total_pages
+    total_pages = property(__get_total_pages)
 
-    @property
-    def pages_range(self):
+    def __pages_range(self):
         """
         Returns a range of pages.
         
@@ -161,6 +205,7 @@ class Paginator(object):
         :rtype: list.
         """
         return range(1, self.total_pages + 1)
+    pages_range = property(__pages_range)
 
 
 class Page(object):
@@ -187,13 +232,15 @@ class Page(object):
     def has_other_pages(self):
         return self.has_previous() or self.has_next()
 
-    def next_page_number(self):
+    def __next_page_number(self):
         return self.number + 1
+    next_page_number = property(__next_page_number)
 
-    def previous_page_number(self):
+    def __previous_page_number(self):
         return self.number - 1
+    previous_page_number = property(__previous_page_number)
 
-    def start_index(self):
+    def __start_index(self):
         """
         Returns the index of the first object on this page,
         relative to total objects in the paginator.
@@ -202,8 +249,9 @@ class Page(object):
         if self.paginator.count == 0:
             return 0
         return (self.paginator.per_page_limit * (self.number - 1)) + 1
+    start_index = property(__start_index)
 
-    def end_index(self):
+    def __end_index(self):
         """
         Returns the index of the last object on this page,
         relative to total objects found (hits).
@@ -211,4 +259,5 @@ class Page(object):
         # Special case for the last page
         if self.number == self.paginator.total_pages:
             return self.paginator.count
-        return self.number * self.paginator.per_page_limit    
+        return self.number * self.paginator.per_page_limit
+    end_index = property(__end_index)
