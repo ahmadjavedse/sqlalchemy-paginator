@@ -37,11 +37,9 @@ You can use this paginator module in python scripting code and in web based appl
 
 How to install?
 ---------------
-| When ``pip`` is available, the distribution can be downloaded from Pypi and installed in single step::
+| When ``pip`` is available, the distribution can be downloaded from Pypi and installed in single step
 | ``>>> pip install SQLAlchemy-Paginator``
-..
-| or you can use ``easy_install``::
+| or you can use ``easy_install``
 | ``>>> easy_install SQLAlchemy-Paginator``
-..
-
+| 
 You can find more document in ``sqlalchemy_paginator/paginator.py`` module and a complete example in the ``tests/sqlalchemy_paginator_tests.py`` file of this Python module.
