@@ -1,3 +1,11 @@
+.. image:: https://badge.fury.io/py/Sqlalchemy-paginator.svg
+    :target: https://pypi.python.org/pypi/SQLAlchemy-Paginator
+    :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/dm/SQLAlchemy-Paginator.svg
+    :target: https://pypi.python.org/pypi/SQLAlchemy-Paginator
+    :alt: PyPI Downloads
+
 SQLAlchemy-Paginator
 ====================
 This module helps you to manage large data with pagination.
