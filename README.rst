@@ -43,7 +43,7 @@ You can use this paginator module in python scripting code and in web based appl
   > if page.has_previous():
   >     print "to get previous page number", page.previous_page_number
   > if page.has_next():
-  >     print "to next previous page number", page.next_page_number
+  >     print "to get next page number", page.next_page_number
 
 How to install?
 ---------------
