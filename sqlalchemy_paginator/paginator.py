@@ -6,7 +6,7 @@ Created on Oct 20, 2015
 from math import ceil
 from sqlalchemy import func
 
-from exceptions import PageNotAnInteger, EmptyPage
+from .exceptions import PageNotAnInteger, EmptyPage
 
 
 class Paginator(object):
