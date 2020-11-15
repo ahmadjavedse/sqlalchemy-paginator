@@ -6,7 +6,7 @@ Created on Oct 20, 2015
 from math import ceil
 from sqlalchemy import func
 
-from exceptions import PageNotAnInteger, EmptyPage
+from .exceptions import PageNotAnInteger, EmptyPage
 
 
 class Paginator(object):
@@ -91,7 +91,7 @@ class Paginator(object):
         self.__iter_page = 1
         return self
     
-    def next(self):
+    def __next__(self):
         """Returns the next page and is implicitly called at each loop 
         increment."""
         if self.__iter_page > self.total_pages:
@@ -99,6 +99,8 @@ class Paginator(object):
         page = self.page(self.__iter_page)
         self.__iter_page += 1
         return page
+    
+    next = __next__
 
     def validate_page_number(self, page_number):
         """
