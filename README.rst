@@ -1,5 +1,5 @@
-.. image:: https://badge.fury.io/py/Sqlalchemy-paginator.svg
-    :target: https://pypi.python.org/pypi/SQLAlchemy-Paginator
+.. image:: https://badge.fury.io/py/SQLAlchemy-Paginator.png
+    :target: https://badge.fury.io/py/SQLAlchemy-Paginator
     :alt: PyPI Version
 
 SQLAlchemy-Paginator

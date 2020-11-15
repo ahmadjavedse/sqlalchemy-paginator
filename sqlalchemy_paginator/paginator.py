@@ -1,8 +1,8 @@
-'''
+"""
 Created on Oct 20, 2015
 
 @author: ahmadjaved.se@gmail.com
-'''
+"""
 from math import ceil
 from sqlalchemy import func
 
